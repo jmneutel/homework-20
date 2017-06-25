@@ -1,45 +1,64 @@
-// Dependencies
-var React = require("react");
+var React = require('react');
+var Router = require('react-router');
 
-// Includes the two children
-var Query = require("./Search/Query");
-var Results = require("./Search/Results");
-var helpers = require("../helpers/helpers");
+var Query = require('./Search/Query');
+var Results = require('./Search/Results');
+
+var helpers = require('../helpers/helpers');
 
 var Search = React.createClass({
 
-
-    // Include the helpers for making API Calls
-    getInitialState: function(){
-        return {
-            "term": "Kobe",
-            "start": "2016",
-            "end": "2017",
-            "results": {}
-        };
-    },
-
-    // Runs the query with the initial state variables
-    componentDidMount: function(){
-
-        // Calls the axios helper query
-        helpers.runQuery(this.state.term, this.state.start, this.state.end).then(function(data){
-            this.setState({results: data.docs } )
-        }.bind(this));
-
-    },
-
-    render: function(){
-
-
-        return (
-
-            <div className="applicationContainer">
-                <Query />
-                <Results results= {this.state.start}/>
-            </div>
-        )
+  getInitialState: function() {
+    return {
+      queryTerm: "",
+      startYear: "",
+      endYear: "",
+      results: {}
     }
-})
+  },
+
+  componentDidUpdate: function(prevProps, prevState)  {
+
+
+    if (this.state.queryTerm != "" && (prevState.queryTerm != this.state.queryTerm || prevState.startYear != this.state.startYear || prevState.endYear != this.state.endYear))
+    {
+      helpers.runQuery(this.state.queryTerm, this.state.startYear, this.state.endYear)
+
+      .then(function(data)  {
+        if (data != this.state.results)
+        {
+          this.setState({
+            results: data
+          })
+        }
+
+      }.bind(this))
+    }
+  },
+
+  setQuery: function(newQuery, newStart, newEnd){
+
+    this.setState({
+      queryTerm: newQuery,
+      startYear: newStart,
+      endYear: newEnd
+    })
+  },
+
+  render: function(){
+
+    return(
+
+      <div className="main-container">
+
+        <Query updateSearch={this.setQuery} />
+
+        <Results results={this.state.results}/>
+
+      </div>
+
+    )
+  }
+});
 
 module.exports = Search;

@@ -1,72 +1,79 @@
- // Include Server Dependencies
-var express = require("express");
-var bodyParser = require("body-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-var Article = require("./models/model");
+var express = require('express');
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
 
-// Create a new express app
+var Article = require('./models/Article.js');
+
 var app = express();
-// Sets an initial port. We'll use this later in our listener
 var PORT = process.env.PORT || 3000;
 
-// Run Morgan for Logging
-app.use(logger("dev"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.text());
-app.use(bodyParser.json({ type: "application/vnd.api+json" }));
+app.use(bodyParser.json({type:'application/vnd.api+json'}));
 
-app.use(express.static("./public"));
+app.use(express.static('./public'));
 
-app.get("/api/saved", function(req, res){
-   
+mongoose.connect("mongodb://jaredneutel:password12345@ds131742.mlab.com:31742/heroku_hd08cl4j");
+var db = mongoose.connection;
+
+db.on('error', function (err) {
+  console.log('Mongoose Error: ', err);
+});
+
+db.once('open', function () {
+  console.log('Mongoose connection successful.');
+});
+
+app.get('/', function(req, res){
+  res.sendFile('./public/index.html');
+})
+
+app.get('/api/saved', function(req, res) {
+
   Article.find({})
-    .exec(function(err,doc) {
-      if (err) {
+    .exec(function(err, doc){
+
+      if(err){
         console.log(err);
-      } else {
+      }
+      else {
         res.send(doc);
       }
     })
 });
 
-app.post("/api/saved", function(req, res){
+app.post('/api/saved', function(req, res){
   var newArticle = new Article(req.body);
-  console.log(req.body);
 
-  newArticle.save(function(err, doc) {
-  	if (err) {
-  		console.log(err);
-  	} else {
-  		res.send(doc);
-  	}
-  })
+  var title = req.body.title;
+  var date = req.body.date;
+  var url = req.body.url;
+
+  newArticle.save(function(err, doc){
+    if(err){
+      console.log(err);
+    } else {
+      res.send(doc._id);
+    }
+  });
 });
 
-app.get("/", function(req, res){
-  res.sendFile(__dirname + "/public/nyt-example.html");
-});
+app.delete('/api/saved/', function(req, res){
 
-// -------------------------------------------------
+  var url = req.param('url');
 
-// MongoDB configuration (Change this URL to your own DB)
-// mongoose.connect("mongodb://admin:codingrocks@ds023674.mlab.com:23674/heroku_5ql1blnl");
-mongoose.connect("mongodb://jaredneutel:password12345@ds131742.mlab.com:31742/heroku_hd08cl4j");
-var db = mongoose.connection;
-
-db.on("error", function(err) {
-  console.log("Mongoose Error: ", err);
-});
-
-db.once("open", function() {
-  console.log("Mongoose connection successful.");
+  Article.find({"url": url}).remove().exec(function(err, data){
+    if(err){
+      console.log(err);
+    }
+    else {
+      res.send("Deleted");
+    }
+  });
 });
 
 
-// -------------------------------------------------
-
-// Starting our express server
 app.listen(PORT, function() {
   console.log("App listening on PORT: " + PORT);
 });

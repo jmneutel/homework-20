@@ -1,96 +1,100 @@
 var React = require('react');
+var Router = require('react-router');
+
+var helpers = require('../../helpers/helpers');
 
 var Results = React.createClass({
 
-	render: function() {
-		return(
-		<div className = "applicationContainer">
-				 <div className="row">
-                        <div className="col-lg-12">
+  getInitialState: function(){
+    return {
+      title: "",
+      url: "",
+      pubdate: "",
+    }
+  },
 
-                            <div className="panel panel-primary">
-                                <div className="panel-heading">
-                                    <h1 className="panel-title"><strong><i className="fa fa-list-alt"></i>  Results</strong></h1>
-                                </div>
-                                <div className="panel-body">
-                                    <ul className="list-group">
-                                      <li className="list-group-item">
+  handleClick: function(item, event){
 
-                                        <h3>
-                                            <span><em>Aliens Invade Paris</em></span>
-                                            <span className="btn-group pull-right" >
-                                                <button className="btn btn-default ">View Article</button>
-                                                <button className="btn btn-primary">Save</button>
-                                            </span>
-                                        </h3>
-                                        <p>Date Published: 03/15/16</p>
+    helpers.postSaved(item.headline.main, item.pub_date, item.web_url)
+      .then(function(data){
+      }.bind(this))
 
-                                      </li>
+  },
 
-                                      <li className="list-group-item">
+  render: function(){
 
-                                        <h3>
-                                            <span><em>Obama Gives Commencement Speech</em></span>
-                                            <span className="btn-group pull-right" >
-                                                <button className="btn btn-default ">View Article</button>
-                                                <button className="btn btn-primary">Save</button>
-                                            </span>
-                                        </h3>
-                                        <p>Date Published: 03/15/16</p>
+    if (!this.props.results.hasOwnProperty('docs')){
 
-                                      </li>
+      return(
 
-                                      <li className="list-group-item">
+        <li className="list-group-item">
 
-                                        <h3>
-                                            <span><em>AIDS is Cured!</em></span>
-                                            <span className="btn-group pull-right" >
-                                                <button className="btn btn-default ">View Article</button>
-                                                <button className="btn btn-primary">Save</button>
-                                            </span>
-                                        </h3>
-                                        <p>Date Published: 03/15/16</p>
+          <h3>
+              <span><em>Search for articles to begin.</em></span>
+          </h3>
+
+          </li>
+
+      )
+
+    }
+
+    else {
+
+      var articles = this.props.results.docs.map(function(article, index){
+
+        return(
+
+            <div key={index}>
+
+              <li className="list-group-item" >
+
+              <h3>
+                  <span><em>{article.headline.main}</em></span>
+                <span className="btn-group pull-right" >
+                  <a href={article.web_url} target="_blank"><button className="btn btn-default ">View Article</button></a>
+
+                  <button className="btn btn-primary" onClick={this.handleClick.bind(this, article)}>Save</button>
+                </span>
+              </h3>
+              <p>Date Published: {article.pub_date}</p>
+
+              </li>
+
+            </div>
+        )
+
+      }.bind(this))
+
+    }
+
+    return(
+      <div className ="main-container">
 
 
-                                      </li>
+        <div className="row">
+          <div className="col-lg-12">
 
-                                      <li className="list-group-item">
+            <div className="panel panel-primary">
+              <div className="panel-heading">
+                <h1 className="panel-title"><strong><i className="fa fa-list-alt"></i>  Results</strong></h1>
+              </div>
+              <div className="panel-body">
+                <ul className="list-group">
 
-                                        <h3>
-                                            <span><em>Knicks Win Championship</em></span>
-                                            <span className="btn-group pull-right" >
-                                                <button className="btn btn-default ">View Article</button>
-                                                <button className="btn btn-primary">Save</button>
-                                            </span>
-                                        </h3>
-                                        <p>Date Published: 03/15/16</p>
+                  {articles}
 
-                                      </li>
+                </ul>
+              </div>
+            </div>
 
-                                      <li className="list-group-item">
-
-                                        <h3>
-                                            <span><em>Mud: The New Superfood?</em></span>
-                                            <span className="btn-group pull-right" >
-                                                <button className="btn btn-default ">View Article</button>
-                                                <button className="btn btn-primary">Save</button>
-                                            </span>
-                                        </h3>
-                                        <p>Date Published: 03/15/16</p>
-
-                                      </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    	
+          </div>
         </div>
+      </div>
+    )
 
-		)
-	}
+  }
+
 });
 
 module.exports = Results;
